@@ -25,19 +25,16 @@ def resize_and_upload():
         # Step 3: Resize to 480x480
         img_resized = img.resize((480, 480))
 
-        # Step 4: Save temporarily
-        temp_filename = "temp_resized.jpg"
-        img_resized.save(temp_filename)
+        # Step 4: Save the resized image to memory using BytesIO
+        img_byte_arr = BytesIO()
+        img_resized.save(img_byte_arr, format="JPEG")
+        img_byte_arr.seek(0)
 
         # Step 5: Upload to tmpfiles.org
-        with open(temp_filename, 'rb') as f:
-            upload_response = requests.post(
-                'https://tmpfiles.org/api/v1/upload',
-                files={'file': f}
-            )
-
-        # Remove temp file
-        os.remove(temp_filename)
+        upload_response = requests.post(
+            'https://tmpfiles.org/api/v1/upload',
+            files={'file': ('temp_resized.jpg', img_byte_arr, 'image/jpeg')}
+        )
 
         # Step 6: Handle upload response
         if upload_response.status_code == 200:
